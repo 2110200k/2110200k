@@ -1,0 +1,227 @@
+// Tween Animation
+
+import 'package:flutter/material.dart';
+
+class Screen1 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Screen 1'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            CustomWidget(title: 'Widget 1'),
+            SizedBox(height: 20),
+            CustomWidget(title: 'Widget 2'),
+            SizedBox(height: 20),
+            CustomWidget(title: 'Widget 3'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CustomWidget extends StatelessWidget {
+  final String title;
+
+  const CustomWidget({Key? key, required this.title}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.blue),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(title),
+    );
+  }
+}
+//  Physics-based Animation
+import 'package:flutter/material.dart';
+
+class Screen2 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Screen 2'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            CustomWidget(title: 'Widget 1'),
+            SizedBox(height: 20),
+            CustomWidget(title: 'Widget 2'),
+            SizedBox(height: 20),
+            CustomWidget(title: 'Widget 3'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// CustomWidget remains the same as it's reused across screens.
+
+
+// PageRouteBuilder Animation
+import 'package:flutter/material.dart';
+
+class Screen3 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Screen 3'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            CustomPageRouteAnimatedWidget(title: 'Widget 1'),
+            SizedBox(height: 20),
+            CustomPageRouteAnimatedWidget(title: 'Widget 2'),
+            SizedBox(height: 20),
+            CustomPageRouteAnimatedWidget(title: 'Widget 3'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// CustomPageRouteAnimatedWidget - Refer to the custom_widgets.dart file.
+
+
+//custom_widgets.dart
+
+import 'package:flutter/material.dart';
+
+class CustomTweenAnimatedWidget extends StatelessWidget {
+  final String title;
+
+  const CustomTweenAnimatedWidget({Key? key, required this.title}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      duration: Duration(seconds: 1),
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: CustomWidget(title: title),
+        );
+      },
+    );
+  }
+}
+
+class CustomPhysicsAnimatedWidget extends StatelessWidget {
+  final String title;
+
+  const CustomPhysicsAnimatedWidget({Key? key, required this.title}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return PhysicsAnimationWidget(
+      child: CustomWidget(title: title),
+    );
+  }
+}
+
+class CustomPageRouteAnimatedWidget extends StatelessWidget {
+  final String title;
+
+  const CustomPageRouteAnimatedWidget({Key? key, required this.title}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => CustomWidget(title: title),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              const begin = Offset(1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.easeInOut;
+              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var offsetAnimation = animation.drive(tween);
+              return SlideTransition(position: offsetAnimation, child: child);
+            },
+          ),
+        );
+      },
+      child: CustomWidget(title: title),
+    );
+  }
+}
+
+class CustomWidget extends StatelessWidget {
+  final String title;
+
+  const CustomWidget({Key? key, required this.title}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.blue),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(title),
+    );
+  }
+}
+
+class PhysicsAnimationWidget extends StatefulWidget {
+  final Widget child;
+
+  const PhysicsAnimationWidget({Key? key, required this.child}) : super(key: key);
+
+  @override
+  _PhysicsAnimationWidgetState createState() => _PhysicsAnimationWidgetState();
+}
+
+class _PhysicsAnimationWidgetState extends State<PhysicsAnimationWidget>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: Duration(seconds: 1),
+  )..forward();
+
+  late final Animation<double> _animation = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.elasticOut,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      child: widget.child,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _animation.value,
+          child: child,
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
